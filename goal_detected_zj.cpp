@@ -90,12 +90,22 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 	split(src_img,gray_dst);
 //建立空图
 	Mat contourimage=Mat::zeros(src_img.rows,src_img.cols,CV_8UC1);
+//---zj---
+	Mat threshold1,threshold2,threshold,gaussian_dst;
+	threshold1 = -(-0.02661)*gray_dst[2]-(0.01342)*gray_dst[1]-(0.02487)*gray_dst[0]+(-0.9943)>-0.5;//r
+	threshold2 = -(0.03109)*gray_dst[2]-(-0.05308)*gray_dst[1]-(0.03566)*gray_dst[0]+(0.3493)>-0.1;//g
+	threshold = threshold1 | threshold2;
+	morphologyEx(threshold,threshold,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE, Size(3,3)));//形态学滤波：场内去噪//#9.23
+	morphologyEx(threshold,gaussian_dst,MORPH_CLOSE,getStructuringElement(MORPH_ELLIPSE, Size(3,3)));//形态学滤波：场外去噪//#9.23
+//---zj end---
+/*
 //反向二值化
 	Mat threshold_dst=Mat::zeros(src_img.rows,src_img.cols,CV_8UC1);
 	threshold(gray_dst[0],threshold_dst,threshold_param1,255,1);
 //中值滤波
-	Mat gaussian_dst;
+	
 	medianBlur(threshold_dst, gaussian_dst,blur_param); //大多数情况3也使用 
+*/
 //提取边框
 	findContours(gaussian_dst,contour,hierarchy,RETR_CCOMP,CHAIN_APPROX_NONE);//RETR_LIST
 	for(int i=0;i<contour.size();i++)

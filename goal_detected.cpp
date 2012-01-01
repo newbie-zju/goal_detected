@@ -27,10 +27,10 @@ using namespace Eigen;
 float yaw;
 
 Mat src_img;
-int threshold_param1=56;//35--20  55-P   35-V
+int threshold_param1=46;//35--20  55-P   35-V
 int threshold_param2=45;
 int blur_param=5;
-int threshold_size=580;
+int threshold_size=1500;
 dji_sdk::LocalPosition quadrotorPos;
 float Quater[4];
 float Quater_last[4]={0};
@@ -55,7 +55,7 @@ void quaternionCallback(const dji_sdk::AttitudeQuaternion::ConstPtr &msg)
 	Quater[2] = msg->q2;
 	Quater[3] = msg->q3;
 	yaw = atan2(2.0 * (Quater[3] * Quater[0] + Quater[1] * Quater[2]) , - 1.0 + 2.0 * (Quater[0] * Quater[0] + Quater[1] * Quater[1]));
-   	ROS_INFO("yaw = %f",yaw);
+   	//ROS_INFO("yaw = %f",yaw);
 }
 void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 {    
@@ -163,7 +163,7 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 				vert.push_back(verte[i]);
 			}
 			//去除不符合矩形约束的轮廓	
-			if(rate>1.1&&rate<2.4)
+			if(rate>1.5&&rate<2.0)
 			{
 				vertex.push_back(vert);
 			}
@@ -246,16 +246,17 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 		// 		centerx=centerx/4;			
 		// 		centery=centery/4;
 		// 		Point2f pt(centerx,centery);
-		// 		centerpt.push_back(pt);
+		// 		centerpt.push_back(pt); 
 		// 		dst_center=sqrt((centerx-Imagecenterx)*(centerx-Imagecenterx)+(centery-Imagecentery)*(centery-Imagecentery));
 		// 		if(dst_center<min_dst_center)
 		// 		{
 		// //			min_dst_center=dst_center;
 		// 			min_ID=i;
 		// 		}			
-		// 	}
-			float Markerlength=0.254,Markerwidth=0.1524;
-			Mat Objpoints(4,3,CV_32FC1);
+		// 	} 
+			float Markerlength=0.254;
+			float Markerwidth=0.154;
+			Mat Objpoints(4,3,CV_32FC1); 
 			Objpoints.at<float>(0,0)=-Markerlength/2;
 			Objpoints.at<float>(0,1)=0;
 			Objpoints.at<float>(0,2)=0;
@@ -374,7 +375,7 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 		}       
 	}
 	detected_flag=vertex.size();
-	if(detected_flag==0||quadrotorPos.z<1)
+	if(detected_flag==0||quadrotorPos.z<1.3)
 	{
 		T_vec[0]=0.0;
 		T_vec[1]=0.0;
