@@ -23,6 +23,7 @@ ros::Subscriber quaternion_sub;
 using namespace std;
 using namespace cv;
 using namespace Eigen;
+float yaw;
 
 Mat src_img;
 int threshold_param1= 65;//35--20  55-P   35-V
@@ -32,6 +33,7 @@ int threshold_size=580;
 dji_sdk::LocalPosition quadrotorPos;
 float Quater[4];
 float Quater_last[4]={0};
+//int count_quater = 0; //count error Q
 VectorXd Body_to_Global( double arr[], float theta_angle, float Quater[] );
 void drawArrow(cv::Mat& img, cv::Point pStart, cv::Point pEnd, int len, int alpha, cv::Scalar color, int thickness = 1, int lineType = 8);
 void blur_param_callback(int ,void*)
@@ -51,6 +53,8 @@ void quaternionCallback(const dji_sdk::AttitudeQuaternion::ConstPtr &msg)
 	Quater[1] = msg->q1;
 	Quater[2] = msg->q2;
 	Quater[3] = msg->q3;
+	yaw = atan2(2.0 * (Quater[3] * Quater[0] + Quater[1] * Quater[2]) , - 1.0 + 2.0 * (Quater[0] * Quater[0] + Quater[1] * Quater[1]));
+   //ROS_INFO("yaw = %f",yaw);
 }
 void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 {    
@@ -347,12 +351,15 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 	T_vec_tmp[0] = -T_vec[1];
 	T_vec_tmp[1] = T_vec[0];
 	T_vec_tmp[2] = T_vec[2];
-	if(Quater[0]*Quater[0]+Quater[1]*Quater[1]+Quater[2]*Quater[2]+Quater[3]*Quater[3] > 1){
+	if(fabs(Quater[0]*Quater[0]+Quater[1]*Quater[1]+Quater[2]*Quater[2]+Quater[3]*Quater[3] - 1)  > 0.2){
 		Quater[0] = Quater_last[0];
 		Quater[1] = Quater_last[1];
 		Quater[2] = Quater_last[2];
 		Quater[3] = Quater_last[3];
+		//count_quater = count_quater+1;
+		//ROS_INFO("count= %d", count_quater);
 	}
+	
 	Quater_last[0] = Quater[0];
 	Quater_last[1] = Quater[1];
 	Quater_last[2] = Quater[2];
@@ -368,11 +375,11 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 	goal_pose_pub.publish(pose);
 	
 	drawContours(src_img,contour1,-1,255,2,8);
-        namedWindow("show",CV_WINDOW_AUTOSIZE);
-        imshow("show", src_img);
-        createTrackbar("threshold_param1","show",&threshold_param1,100,NULL);
-        createTrackbar("blur_param","show",&blur_param,10,blur_param_callback);
-        createTrackbar("threshold_size","show",&threshold_size,2000,NULL);
+        //namedWindow("show",CV_WINDOW_AUTOSIZE);
+        //imshow("show", src_img);
+        //createTrackbar("threshold_param1","show",&threshold_param1,100,NULL);
+        //createTrackbar("blur_param","show",&blur_param,10,blur_param_callback);
+        //createTrackbar("threshold_size","show",&threshold_size,2000,NULL);
         waitKey(1);
   //      image_rect_pub.publish( cv_ptr->toImageMsg());
 t=((double)cvGetTickCount() - t)/(cvGetTickFrequency()*1000);
@@ -433,6 +440,7 @@ VectorXd Body_to_Global( double Body_arry[], float theta_angle, float Quater[] )
 	Rotate = Rotate.inverse();
 	Global_vector = Rotate * Body_vector; //转换成NED坐标系下机体相对于小车的x y坐标的增量
 	theta_yaw = atan2(2.0 * (Quater[3] * Quater[0] + Quater[1] * Quater[2]) , - 1.0 + 2.0 * (Quater[0] * Quater[0] + Quater[1] * Quater[1]));
+	ROS_INFO("theta_yaw: %f",theta_yaw);
 	Result_vector(0) = Global_vector(0);
 	Result_vector(1) = Global_vector(1);
 	Gtheta_angle = theta_yaw + (float) theta_angle;

@@ -119,7 +119,8 @@ CATKIN_DEPENDS message_runtime
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+##include_directories(include ${EIGEN_INCLUDE_DIR})
+
 
 ## Declare a C++ library
 # add_library(goal_detected
