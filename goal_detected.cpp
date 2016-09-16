@@ -19,14 +19,15 @@ ros::Publisher goal_pose_pub;
 ros::Publisher  T_vec_pub;
 ros::Subscriber image_rect_sub;
 ros::Subscriber quadrotorPos_sub;
-ros::Subscriber quaternion_sub;
+ros::Subscriber quaternion_sub;	
+
 using namespace std;
 using namespace cv;
 using namespace Eigen;
 float yaw;
 
 Mat src_img;
-int threshold_param1= 65;//35--20  55-P   35-V
+int threshold_param1=56;//35--20  55-P   35-V
 int threshold_param2=45;
 int blur_param=5;
 int threshold_size=580;
@@ -54,7 +55,7 @@ void quaternionCallback(const dji_sdk::AttitudeQuaternion::ConstPtr &msg)
 	Quater[2] = msg->q2;
 	Quater[3] = msg->q3;
 	yaw = atan2(2.0 * (Quater[3] * Quater[0] + Quater[1] * Quater[2]) , - 1.0 + 2.0 * (Quater[0] * Quater[0] + Quater[1] * Quater[1]));
-   //ROS_INFO("yaw = %f",yaw);
+   	ROS_INFO("yaw = %f",yaw);
 }
 void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 {    
@@ -156,7 +157,7 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 				vert.push_back(verte[i]);
 			}
 			//去除不符合矩形约束的轮廓	
-			if(rate>1.5&&rate<2.0)
+			if(rate>1.1&&rate<2.4)
 			{
 				vertex.push_back(vert);
 			}
@@ -338,9 +339,13 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 	T_vec_msg.y = T_vec[0];
 	T_vec_msg.z = T_vec[2];
 	T_vec_pub.publish(T_vec_msg);
-	if(detected_flag==0)
+	if(detected_flag==0||quadrotorPos.z<1)
 	{
-		T_vec[0]=T_vec[1]=T_vec[2]=goal_angle=0;
+		T_vec[0]=0.0;
+		T_vec[1]=0.0;
+		T_vec[2]=0.0;
+		goal_angle=0.0;
+		detected_flag=0.0;
 	}
 	//发送位置信息   
        //涉及的从图像坐标系（x右y下）到机体坐标系的转换（x上y右）
@@ -371,6 +376,8 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 	//pose.z=T_vec[2];
 	pose.z = 0;
 	pose.theta= GT_vec(2);
+	if(pose.theta<-M_PI)pose.theta += 2*M_PI;
+	if(pose.theta>M_PI)pose.theta -= 2*M_PI;
 	pose.flag=detected_flag;
 	goal_pose_pub.publish(pose);
 	
@@ -426,7 +433,7 @@ VectorXd Body_to_Global( double Body_arry[], float theta_angle, float Quater[] )
 	Body_vector(0) = Body_arry[0];
 	Body_vector(1) = Body_arry[1];
 	Body_vector(2) = Body_arry[2];
-	MatrixXd Rotate(3, 3);
+	MatrixXd Rotate(3, 3); 
 	Rotate(0,0) = Quater[0] * Quater[0] + Quater[1] * Quater[1] - Quater[2] * Quater[2] - Quater[3] * Quater[3];
 	Rotate(0,1) = 2 * ( Quater[1] * Quater[2] - Quater[1] * Quater[3] );
 	Rotate(0,2) = 2 * ( Quater[1] * Quater[3] + Quater[0] * Quater[2]);
@@ -440,7 +447,7 @@ VectorXd Body_to_Global( double Body_arry[], float theta_angle, float Quater[] )
 	Rotate = Rotate.inverse();
 	Global_vector = Rotate * Body_vector; //转换成NED坐标系下机体相对于小车的x y坐标的增量
 	theta_yaw = atan2(2.0 * (Quater[3] * Quater[0] + Quater[1] * Quater[2]) , - 1.0 + 2.0 * (Quater[0] * Quater[0] + Quater[1] * Quater[1]));
-	ROS_INFO("theta_yaw: %f",theta_yaw);
+	ROS_INFO_THROTTLE(1,"theta_yaw: %f",theta_yaw);
 	Result_vector(0) = Global_vector(0);
 	Result_vector(1) = Global_vector(1);
 	Gtheta_angle = theta_yaw + (float) theta_angle;
