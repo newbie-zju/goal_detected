@@ -345,7 +345,7 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 		T_vec[1]=0.0;
 		T_vec[2]=0.0;
 		goal_angle=0.0;
-		detected_flag=0.0;
+		detected_flag=0.0; 
 	}
 	//发送位置信息   
        //涉及的从图像坐标系（x右y下）到机体坐标系的转换（x上y右）
@@ -364,7 +364,7 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 		//count_quater = count_quater+1;
 		//ROS_INFO("count= %d", count_quater);
 	}
-	
+	ROS_INFO("Quater=%4.2f,%4.2f,%4.2f,%4.2f",Quater[0],Quater[1],Quater[2],Quater[3]);
 	Quater_last[0] = Quater[0];
 	Quater_last[1] = Quater[1];
 	Quater_last[2] = Quater[2];
@@ -380,7 +380,7 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 	if(pose.theta>M_PI)pose.theta -= 2*M_PI;
 	pose.flag=detected_flag;
 	goal_pose_pub.publish(pose);
-	
+	 
 	drawContours(src_img,contour1,-1,255,2,8);
         //namedWindow("show",CV_WINDOW_AUTOSIZE);
         //imshow("show", src_img);
@@ -435,7 +435,7 @@ VectorXd Body_to_Global( double Body_arry[], float theta_angle, float Quater[] )
 	Body_vector(2) = Body_arry[2];
 	MatrixXd Rotate(3, 3); 
 	Rotate(0,0) = Quater[0] * Quater[0] + Quater[1] * Quater[1] - Quater[2] * Quater[2] - Quater[3] * Quater[3];
-	Rotate(0,1) = 2 * ( Quater[1] * Quater[2] - Quater[1] * Quater[3] );
+	Rotate(0,1) = 2 * ( Quater[1] * Quater[2] - Quater[0] * Quater[3]);
 	Rotate(0,2) = 2 * ( Quater[1] * Quater[3] + Quater[0] * Quater[2]);
 	Rotate(1,0) = 2 * ( Quater[1] * Quater[2] + Quater[0] * Quater[3]);
 	Rotate(1,1) = Quater[0] * Quater[0] - Quater[1] * Quater[1] + Quater[2] * Quater[2] - Quater[3] * Quater[3];
@@ -444,7 +444,7 @@ VectorXd Body_to_Global( double Body_arry[], float theta_angle, float Quater[] )
 	Rotate(2,1) = 2 * ( Quater[2] * Quater[3] + Quater[0] * Quater[1]);
 	Rotate(2,2) = Quater[0] * Quater[0] - Quater[1] * Quater[1] - Quater[2] * Quater[2] + Quater[3] * Quater[3];
 	
-	Rotate = Rotate.inverse();
+	//Rotate = Rotate.inverse();
 	Global_vector = Rotate * Body_vector; //转换成NED坐标系下机体相对于小车的x y坐标的增量
 	theta_yaw = atan2(2.0 * (Quater[3] * Quater[0] + Quater[1] * Quater[2]) , - 1.0 + 2.0 * (Quater[0] * Quater[0] + Quater[1] * Quater[1]));
 	ROS_INFO_THROTTLE(1,"theta_yaw: %f",theta_yaw);
