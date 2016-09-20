@@ -86,24 +86,24 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 	float goal_angle;//存放目标的方向
 	int detected_flag;//检测到目标的标志位，0为无目标。
 //通道分离
-       vector<Mat> gray_dst; 
-       split(src_img,gray_dst);
+	vector<Mat> gray_dst; 
+	split(src_img,gray_dst);
 //建立空图
-       Mat contourimage=Mat::zeros(src_img.rows,src_img.cols,CV_8UC1);
+	Mat contourimage=Mat::zeros(src_img.rows,src_img.cols,CV_8UC1);
 //反向二值化
-       Mat threshold_dst=Mat::zeros(src_img.rows,src_img.cols,CV_8UC1);
-       threshold(gray_dst[0],threshold_dst,threshold_param1,255,1);
+	Mat threshold_dst=Mat::zeros(src_img.rows,src_img.cols,CV_8UC1);
+	threshold(gray_dst[0],threshold_dst,threshold_param1,255,1);
 //中值滤波
-       Mat gaussian_dst;
-       medianBlur(threshold_dst, gaussian_dst,blur_param); //大多数情况3也使用 
- //提取边框
-       findContours(gaussian_dst,contour,hierarchy,RETR_CCOMP,CHAIN_APPROX_NONE);//RETR_LIST
-       for(int i=0;i<contour.size();i++)
-       {
-		int size=contourArea(contour[i]);
-		if (size>threshold_size)   //62000 620
-		contour1.push_back(contour[i]);
-       }
+	Mat gaussian_dst;
+	medianBlur(threshold_dst, gaussian_dst,blur_param); //大多数情况3也使用 
+//提取边框
+	findContours(gaussian_dst,contour,hierarchy,RETR_CCOMP,CHAIN_APPROX_NONE);//RETR_LIST
+	for(int i=0;i<contour.size();i++)
+	{
+	int size=contourArea(contour[i]);
+	if (size>threshold_size)   //62000 620
+	contour1.push_back(contour[i]);
+	}
 //找出边界疑似区域	
 	if(contour1.size()>0)
 	{
@@ -173,7 +173,6 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 //对小矩形处理
 	if(vertex.size()>0)
 	{  
-
 		//cout<<"goal number="<<vertex.size()<<endl; 
 		for(int j=0;j<vertex.size();j++)
 		{		
@@ -224,8 +223,8 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 			angpt.push_back(p1);
 			anglept.push_back(angpt);
 			//画出箭头
-			drawArrow(src_img,Point((tempver[0].x+tempver[3].x)/2,(tempver[0].y+tempver[3].y)/2),
-		       	Point((tempver[1].x+tempver[2].x)/2,(tempver[1].y+tempver[2].y)/2),20,15,Scalar(0,255,255),5);		
+			//drawArrow(src_img,Point((tempver[0].x+tempver[3].x)/2,(tempver[0].y+tempver[3].y)/2),
+			//Point((tempver[1].x+tempver[2].x)/2,(tempver[1].y+tempver[2].y)/2),20,15,Scalar(0,255,255),5);		
 		}
 	}
 //求最近小车像素坐标与角度
@@ -255,124 +254,124 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 		// 			min_ID=i;
 		// 		}			
 		// 	}
-		float Markerlength=0.254,Markerwidth=0.1524;
-		Mat Objpoints(4,3,CV_32FC1);
-		Objpoints.at<float>(0,0)=-Markerlength/2;
-		Objpoints.at<float>(0,1)=0;
-		Objpoints.at<float>(0,2)=0;
-		Objpoints.at<float>(1,0)=-Markerlength/2;
-		Objpoints.at<float>(1,1)=Markerwidth;
-		Objpoints.at<float>(1,2)=0;
-		Objpoints.at<float>(2,0)=Markerlength/2;
-		Objpoints.at<float>(2,1)=Markerwidth;
-		Objpoints.at<float>(2,2)=0;
-		Objpoints.at<float>(3,0)=Markerlength/2;
-		Objpoints.at<float>(3,1)=0;
-		Objpoints.at<float>(3,2)=0;
+			float Markerlength=0.254,Markerwidth=0.1524;
+			Mat Objpoints(4,3,CV_32FC1);
+			Objpoints.at<float>(0,0)=-Markerlength/2;
+			Objpoints.at<float>(0,1)=0;
+			Objpoints.at<float>(0,2)=0;
+			Objpoints.at<float>(1,0)=-Markerlength/2;
+			Objpoints.at<float>(1,1)=Markerwidth;
+			Objpoints.at<float>(1,2)=0;
+			Objpoints.at<float>(2,0)=Markerlength/2;
+			Objpoints.at<float>(2,1)=Markerwidth;
+			Objpoints.at<float>(2,2)=0;
+			Objpoints.at<float>(3,0)=Markerlength/2;
+			Objpoints.at<float>(3,1)=0;
+			Objpoints.at<float>(3,2)=0;
 
-		Mat CameraMatrix(3,3,CV_32FC1);
-		CameraMatrix.at<float>(0,0)=419.998;//fx
-		CameraMatrix.at<float>(0,1)=0;
-		CameraMatrix.at<float>(0,2)=361.793;//U0
-		CameraMatrix.at<float>(1,0)=0;
-		CameraMatrix.at<float>(1,1)=418.866;//fy
-		CameraMatrix.at<float>(1,2)=247.059;//V0
-		CameraMatrix.at<float>(2,0)=0;
-		CameraMatrix.at<float>(2,1)=0;
-		CameraMatrix.at<float>(2,2)=1;
+			Mat CameraMatrix(3,3,CV_32FC1);
+			CameraMatrix.at<float>(0,0)=419.998;//fx
+			CameraMatrix.at<float>(0,1)=0;
+			CameraMatrix.at<float>(0,2)=361.793;//U0
+			CameraMatrix.at<float>(1,0)=0;
+			CameraMatrix.at<float>(1,1)=418.866;//fy
+			CameraMatrix.at<float>(1,2)=247.059;//V0
+			CameraMatrix.at<float>(2,0)=0;
+			CameraMatrix.at<float>(2,1)=0;
+			CameraMatrix.at<float>(2,2)=1;
 
-		Mat Imgpoints(4,2,CV_32FC1);
-		Imgpoints.at<float>(0,0)=vertex[goal_ID][0].x;
-		Imgpoints.at<float>(0,1)=vertex[goal_ID][0].y;
-		Imgpoints.at<float>(1,0)=vertex[goal_ID][1].x;
-		Imgpoints.at<float>(1,1)=vertex[goal_ID][1].y;
-		Imgpoints.at<float>(2,0)=vertex[goal_ID][2].x;
-		Imgpoints.at<float>(2,1)=vertex[goal_ID][2].y;
-		Imgpoints.at<float>(3,0)=vertex[goal_ID][3].x;
-		Imgpoints.at<float>(3,1)=vertex[goal_ID][3].y;
+			Mat Imgpoints(4,2,CV_32FC1);
+			Imgpoints.at<float>(0,0)=vertex[goal_ID][0].x;
+			Imgpoints.at<float>(0,1)=vertex[goal_ID][0].y;
+			Imgpoints.at<float>(1,0)=vertex[goal_ID][1].x;
+			Imgpoints.at<float>(1,1)=vertex[goal_ID][1].y;
+			Imgpoints.at<float>(2,0)=vertex[goal_ID][2].x;
+			Imgpoints.at<float>(2,1)=vertex[goal_ID][2].y;
+			Imgpoints.at<float>(3,0)=vertex[goal_ID][3].x;
+			Imgpoints.at<float>(3,1)=vertex[goal_ID][3].y;
 
-		Mat distCoeffs(4,1,CV_32FC1);
-		for(int i=0;i<4;i++)
-		    distCoeffs.at<float>(i,0)=0;
-		Mat rvec,tvec;
-		Mat Rvec,Tvec;
-		solvePnP(Objpoints,Imgpoints,CameraMatrix,distCoeffs,rvec,tvec);
-		tvec.convertTo(Tvec,CV_32F);
-		rvec.convertTo(Rvec,CV_32F);
+			Mat distCoeffs(4,1,CV_32FC1);
+			for(int i=0;i<4;i++)
+				distCoeffs.at<float>(i,0)=0;
+			Mat rvec,tvec;
+			Mat Rvec,Tvec;
+			solvePnP(Objpoints,Imgpoints,CameraMatrix,distCoeffs,rvec,tvec);
+			tvec.convertTo(Tvec,CV_32F);
+			rvec.convertTo(Rvec,CV_32F);
 
-		for(int z=0;z<3;z++)
-		{	
-			T_vec[z]=Tvec.at<float>(z,0);
-		}
-		//cout<<"goal_center="<<centerpt[min_ID].x<<"  "<<centerpt[min_ID].y<<endl;
-		//circle(src_img,Point(centerpt[min_ID].x,centerpt[min_ID].y),5,Scalar(250,0,0),-1);
-		//circle(src_img,Point(376,240),5,Scalar(250,0,0),-1);
-		float beta,k_angle;
-		if((anglept[goal_ID][0].x-anglept[goal_ID][1].x)!=0)
-		{
-			k_angle=(anglept[goal_ID][0].y-anglept[goal_ID][1].y)/(anglept[goal_ID][0].x-anglept[goal_ID][1].x);
-			beta=(atan(k_angle))*360/(2*3.1415926);
-		}
-		else
-		{
-			beta=0;
-		}
-
-		if(anglept[goal_ID][0].x<anglept[goal_ID][1].x)
-		{
-			goal_angle=beta+90;
-		}
-		else if((anglept[goal_ID][0].x>anglept[goal_ID][1].x))
-		{
-			goal_angle=beta-90;
-		}
-		else 
-		{
-			if(anglept[goal_ID][0].y<anglept[goal_ID][1].y)
+			for(int z=0;z<3;z++)
+			{	
+				T_vec[z]=Tvec.at<float>(z,0);
+			}
+			//cout<<"goal_center="<<centerpt[min_ID].x<<"  "<<centerpt[min_ID].y<<endl;
+			//circle(src_img,Point(centerpt[min_ID].x,centerpt[min_ID].y),5,Scalar(250,0,0),-1);
+			//circle(src_img,Point(376,240),5,Scalar(250,0,0),-1);
+			float beta,k_angle;
+			if((anglept[goal_ID][0].x-anglept[goal_ID][1].x)!=0)
 			{
-				goal_angle=180;
+				k_angle=(anglept[goal_ID][0].y-anglept[goal_ID][1].y)/(anglept[goal_ID][0].x-anglept[goal_ID][1].x);
+				beta=(atan(k_angle))*360/(2*3.1415926);
+			}
+			else
+			{
+				beta=0;
+			}
+
+			if(anglept[goal_ID][0].x<anglept[goal_ID][1].x)
+			{
+				goal_angle=beta+90;
+			}
+			else if((anglept[goal_ID][0].x>anglept[goal_ID][1].x))
+			{
+				goal_angle=beta-90;
 			}
 			else 
 			{
-				goal_angle=0;
+				if(anglept[goal_ID][0].y<anglept[goal_ID][1].y)
+				{
+					goal_angle=180;
+				}
+				else 
+				{
+					goal_angle=0;
+				}
+			}     
+
+
+			//  //涉及的从图像坐标系（x右y下）到机体坐标系的转换（x上y右）
+			posex=-T_vec[1];
+			posey=T_vec[0];
+			posez=T_vec[2];
+			//cout<<"[x,y]=   "<<posex<<"   "<<posey<<endl;
+
+
+			//涉及的从图像坐标系（x右y下）到机体坐标系的转换（x上y右）
+			double T_vec_tmp[3];
+			T_vec_tmp[0] = -T_vec[1];
+			T_vec_tmp[1] = T_vec[0];
+			T_vec_tmp[2] = T_vec[2];
+
+			if(fabs(Quater[0]*Quater[0]+Quater[1]*Quater[1]+Quater[2]*Quater[2]+Quater[3]*Quater[3] - 1)  > 0.2)
+			{
+				Quater[0] = Quater_last[0];
+				Quater[1] = Quater_last[1];
+				Quater[2] = Quater_last[2];
+				Quater[3] = Quater_last[3];
+				//count_quater = count_quater+1;
+				//ROS_INFO("count= %d", count_quater);
 			}
-		}     
+		//	ROS_INFO("Quater=%4.2f,%4.2f,%4.2f,%4.2f",Quater[0],Quater[1],Quater[2],Quater[3]);
+			Quater_last[0] = Quater[0];
+			Quater_last[1] = Quater[1];
+			Quater_last[2] = Quater[2];
+			Quater_last[3] = Quater[3];
 
-
-		//  //涉及的从图像坐标系（x右y下）到机体坐标系的转换（x上y右）
-		 posex=-T_vec[1];
-		 posey=T_vec[0];
-		 posez=T_vec[2];
-		 //cout<<"[x,y]=   "<<posex<<"   "<<posey<<endl;
-
-
- 		//涉及的从图像坐标系（x右y下）到机体坐标系的转换（x上y右）
-		double T_vec_tmp[3];
-		T_vec_tmp[0] = -T_vec[1];
-		T_vec_tmp[1] = T_vec[0];
-		T_vec_tmp[2] = T_vec[2];
-
-		if(fabs(Quater[0]*Quater[0]+Quater[1]*Quater[1]+Quater[2]*Quater[2]+Quater[3]*Quater[3] - 1)  > 0.2)
-		{
-			Quater[0] = Quater_last[0];
-			Quater[1] = Quater_last[1];
-			Quater[2] = Quater_last[2];
-			Quater[3] = Quater_last[3];
-			//count_quater = count_quater+1;
-			//ROS_INFO("count= %d", count_quater);
-		}
-	//	ROS_INFO("Quater=%4.2f,%4.2f,%4.2f,%4.2f",Quater[0],Quater[1],Quater[2],Quater[3]);
-		Quater_last[0] = Quater[0];
-		Quater_last[1] = Quater[1];
-		Quater_last[2] = Quater[2];
-		Quater_last[3] = Quater[3];
-
-		GT_vec = Body_to_Global( T_vec_tmp, goal_angle*3.1415926/180.0, Quater);
-		pose.x.push_back(GT_vec(0)+ quadrotorPos.x);
-		pose.y.push_back(GT_vec(1)+ quadrotorPos.y);
-		pose.z.push_back(0);
-		pose.theta.push_back( GT_vec(2));		
-	}       
+			GT_vec = Body_to_Global( T_vec_tmp, goal_angle*3.1415926/180.0, Quater);
+			pose.x.push_back(GT_vec(0)+ quadrotorPos.x);
+			pose.y.push_back(GT_vec(1)+ quadrotorPos.y);
+			pose.z.push_back(0);
+			pose.theta.push_back( GT_vec(2));		
+		}       
 	}
 	detected_flag=vertex.size();
 	if(detected_flag==0||quadrotorPos.z<1)
@@ -457,7 +456,7 @@ VectorXd Body_to_Global( double Body_arry[], float theta_angle, float Quater[] )
 	//Rotate = Rotate.inverse();
 	Global_vector = Rotate * Body_vector; //转换成NED坐标系下机体相对于小车的x y坐标的增量
 	theta_yaw = atan2(2.0 * (Quater[3] * Quater[0] + Quater[1] * Quater[2]) , - 1.0 + 2.0 * (Quater[0] * Quater[0] + Quater[1] * Quater[1]));
-	ROS_INFO_THROTTLE(1,"theta_yaw: %f",theta_yaw);
+	//ROS_INFO_THROTTLE(1,"theta_yaw: %f",theta_yaw);
 	Result_vector(0) = Global_vector(0);
 	Result_vector(1) = Global_vector(1);
 	Gtheta_angle = theta_yaw + (float) theta_angle;
