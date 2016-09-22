@@ -133,17 +133,20 @@ CATKIN_DEPENDS message_runtime
 # add_dependencies(goal_detected ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
- add_executable(goal_detected goal_detected.cpp)
+#add_executable(goal_detected goal_detected.cpp)
+ add_executable(goal_detected_zj goal_detected_zj.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(goal_detected_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries( goal_detected
+# target_link_libraries( goal_detected
+#   ${catkin_LIBRARIES}
+# )
+ target_link_libraries( goal_detected_zj
    ${catkin_LIBRARIES}
  )
-
 #############
 ## Install ##
 #############
