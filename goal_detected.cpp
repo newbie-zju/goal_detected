@@ -27,11 +27,14 @@ using namespace Eigen;
 float yaw;
 
 Mat src_img;
-int threshold_param1=46;//35--20  55-P   35-V
+int threshold_param1=50;//35--20  55-P   35-V
 int threshold_param2=45;
 int blur_param=5;
 int threshold_size=1500;
 dji_sdk::LocalPosition quadrotorPos;
+ros::Time startTime;
+ros::Time nowTime;
+ros::Duration timer;
 float Quater[4];
 float Quater_last[4]={0};
 //int count_quater = 0; //count error Q
@@ -375,7 +378,9 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 		}       
 	}
 	detected_flag=vertex.size();
-	if(detected_flag==0||quadrotorPos.z<1.3)
+	nowTime = ros::Time::now();
+	timer = nowTime - startTime;
+	if(detected_flag==0 || quadrotorPos.z<1.3 || timer.toSec()<8)
 	{
 		T_vec[0]=0.0;
 		T_vec[1]=0.0;
@@ -414,7 +419,8 @@ int main(int argc,char **argv)
     quadrotorPos_sub = nh.subscribe("/dji_sdk/local_position", 10, quadrotorPosCallback);
     quaternion_sub = nh.subscribe("dji_sdk/attitude_quaternion", 10, quaternionCallback);
     ros::Rate loop_rate(20);
-   while(ros::ok())
+	startTime = ros::Time::now();
+	while(ros::ok())
     {
         ros::spinOnce();
         loop_rate.sleep();

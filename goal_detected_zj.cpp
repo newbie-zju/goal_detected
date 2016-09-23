@@ -27,11 +27,14 @@ using namespace Eigen;
 float yaw;
 
 Mat src_img;
-int threshold_param1=56;//35--20  55-P   35-V
+int threshold_param1=50;//35--20  55-P   35-V
 int threshold_param2=45;
 int blur_param=5;
 int threshold_size=580;
 dji_sdk::LocalPosition quadrotorPos;
+ros::Time startTime;
+ros::Time nowTime;
+ros::Duration timer;
 float Quater[4];
 float Quater_last[4]={0};
 //int count_quater = 0; //count error Q
@@ -85,25 +88,25 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 	VectorXd GT_vec(3); //存放目标的大地坐标系下的x,y增量和小车运动方向与x轴的变换
 	float goal_angle;//存放目标的方向
 	int detected_flag;//检测到目标的标志位，0为无目标。
-//通道分离
-	vector<Mat> gray_dst; 
-	split(src_img,gray_dst);
-//建立空图
-	Mat contourimage=Mat::zeros(src_img.rows,src_img.cols,CV_8UC1);
 //---zj---
-	Mat threshold1,threshold2,threshold,gaussian_dst;
+	Mat src_img32;
+	src_img.convertTo(src_img32,CV_32FC3);//转换图像数据类型
+	Mat gray_dst[3],threshold1,threshold2,threshold0,gaussian_dst;//通道分离
+	split(src_img32,gray_dst);
+	Mat contourimage=Mat::zeros(src_img.rows,src_img.cols,CV_8UC1);//建立空图
 	threshold1 = -(-0.02661)*gray_dst[2]-(0.01342)*gray_dst[1]-(0.02487)*gray_dst[0]+(-0.9943)>-0.5;//r
 	threshold2 = -(0.03109)*gray_dst[2]-(-0.05308)*gray_dst[1]-(0.03566)*gray_dst[0]+(0.3493)>-0.1;//g
-	threshold = threshold1 | threshold2;
-	morphologyEx(threshold,threshold,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE, Size(3,3)));//形态学滤波：场内去噪//#9.23
-	morphologyEx(threshold,gaussian_dst,MORPH_CLOSE,getStructuringElement(MORPH_ELLIPSE, Size(3,3)));//形态学滤波：场外去噪//#9.23
+	threshold0 = threshold1 | threshold2;
+	morphologyEx(threshold0,threshold0,MORPH_OPEN,getStructuringElement(MORPH_ELLIPSE, Size(3,3)));//形态学滤波：场内去噪//#9.23
+	morphologyEx(threshold0,gaussian_dst,MORPH_CLOSE,getStructuringElement(MORPH_ELLIPSE, Size(3,3)));//形态学滤波：场外去噪//#9.23
 //---zj end---
+
 /*
 //反向二值化
 	Mat threshold_dst=Mat::zeros(src_img.rows,src_img.cols,CV_8UC1);
 	threshold(gray_dst[0],threshold_dst,threshold_param1,255,1);
 //中值滤波
-	
+	Mat gaussian_dst;
 	medianBlur(threshold_dst, gaussian_dst,blur_param); //大多数情况3也使用 
 */
 //提取边框
@@ -385,7 +388,9 @@ void image_rect_callback(const sensor_msgs::ImageConstPtr &msg)
 		}       
 	}
 	detected_flag=vertex.size();
-	if(detected_flag==0||quadrotorPos.z<1)
+	nowTime = ros::Time::now();
+	timer = nowTime - startTime;
+	if(detected_flag==0||quadrotorPos.z<1.3 || timer.toSec()<13)
 	{
 		T_vec[0]=0.0;
 		T_vec[1]=0.0;
@@ -423,6 +428,7 @@ int main(int argc,char **argv)
     T_vec_pub = nh.advertise<geometry_msgs::Point>("T_vec", 1);
     quadrotorPos_sub = nh.subscribe("/dji_sdk/local_position", 10, quadrotorPosCallback);
     quaternion_sub = nh.subscribe("dji_sdk/attitude_quaternion", 10, quaternionCallback);
+	startTime = ros::Time::now();
     ros::Rate loop_rate(20);
    while(ros::ok())
     {
